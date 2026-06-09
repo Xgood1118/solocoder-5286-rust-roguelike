@@ -1,0 +1,49 @@
+需求：Rust + Bevy 引擎 Roguelike 地牢游戏，地图生成 / 战斗 / 背包 / 永久死亡 / 成就 / 多角色。
+
+背景：调研 Roguelike 游戏核心机制：随机地图、回合制战斗、永久死亡（死了从头开始）、build 套路多样性。我们想做个小而美的版本，6 种职业 × 4 个 Boss × 100+ 武器道具。技术栈 Rust + Bevy 0.13（ECS 架构）。
+
+核心功能：
+- 地图生成：BSP 算法切分房间 → 连廊连接 → 随机怪物 / 道具 / 陷阱
+- 战斗：回合制（玩家一动 → 怪物按 AI 行动），技能 / 攻击 / 道具
+- 职业：战士 / 盗贼 / 法师 / 牧师 / 游侠 / 术士，各 3 套 build
+- 武器：剑 / 弓 / 法杖 / 匕首 / 锤 / 长柄，每类 5 把传说
+- 怪物：60+ 种，含 Boss 4 个（章末），有 AI（远程 / 近战 / 治疗 / 召唤）
+- 背包：网格背包（8×6），物品分类（武器 / 防具 / 消耗品 / 材料 / 任务）
+- 永久死亡：玩家死亡 → 进度清零（保留元数据：最高分 / 解锁成就）
+- 成就：30+ 成就（首杀 / 全职业通关 / 无伤通关 / 收集全套）
+- 存档：每回合自动存档（断电不丢进度），支持回放
+- 种子系统：玩家可输入种子重玩同一关
+- 多语言：中文 / 英文
+- 渲染：ASCII + tile 双模式，参考 Caves of Qud
+
+涉及模块：
+- `src/main.rs`：Bevy 启动、系统注册
+- `src/map/`：BSP 生成、视野计算（FOV）
+- `src/combat/`：回合制、伤害公式、buff / debuff
+- `src/entities/`：玩家、怪物、物品
+- `src/ai/`：怪物行为树
+- `src/inventory/`：背包、装备、拖拽
+- `src/persistence/`：存档、读档、回放
+- `src/render/`：ASCII / tile 渲染切换
+
+注意事项：
+- ECS 架构：Bevy 0.13 用 bundle / system，组件数据驱动
+- 地图生成：BSP 切房间后用 Delaunay 三角剖分 → MST 取连廊
+- FOV 用 Symmetric Shadowcasting（4 个八分之一对称），性能好
+- 回合制：玩家输入 → 玩家动作 → 怪物按速度排序执行
+- 伤害公式：`base + atk - def`，暴击 = `2x if rand() < crit_rate`
+- 永久死亡：死亡时 `delete save game` 但保留 meta-progression（解锁成就）
+- 存档用 bincode 序列化 ECS World，Bevy 提供 `bevy_save` 插件
+- 回放：记录每回合的随机种子 + 玩家输入，可重放
+- 种子：RNG 用 `rand_chacha::ChaCha8Rng`，种子可重玩
+- 物品随机生成：词缀系统（`灼热` + `长剑` = `灼热长剑`），属性叠加
+- AI 行为树：用 bevy 0.13 的 system + states 实现简单 BT
+- Boss AI 多阶段：血量 < 50% 切狂暴阶段，技能升级
+- 视野迷雾：未探索 = 黑、已探索但无视野 = 暗、可见 = 亮
+- 网格背包拖拽：Bevy 的鼠标交互 + 物品坐标
+- 性能：100+ 实体同屏，Bevy ECS 自动批处理渲染
+- 测试：核心算法（BSP / 伤害 / AI）用 mockall + 自写测试
+- 跨平台：Windows / macOS / Linux，Bevy 0.13 用 winit 处理输入
+- 性能基准：30+ 怪物同房间不卡（> 60 FPS）
+- 国际化：所有字符串抽到 `assets/i18n/{lang}.json`
+- 资产加载：Bevy 的 `AssetServer` 异步加载

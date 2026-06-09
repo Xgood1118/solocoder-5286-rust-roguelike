@@ -1,0 +1,1 @@
+cargo build --release 直接挂掉，9 个 unresolved external symbol 报错，集中在 tracing_core、bevy_ecs 的 condition/state、send_event_batch、try_schedule_scope 这几个符号上，看起来是 Bevy 0.13 的依赖图不齐或者某个 feature 没启用。游戏根本起不来。检查修复一下。

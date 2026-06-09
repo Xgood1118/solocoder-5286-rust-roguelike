@@ -7,13 +7,16 @@ pub struct InventoryPlugin;
 
 impl Plugin for InventoryPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, (
-            pickup_items,
-            drop_item,
-            equip_item,
-            unequip_item,
-            update_equipped_stats,
-        ).run_if(in_state(GameState::Playing)));
+        app.add_event::<DropItemEvent>()
+            .add_event::<EquipItemEvent>()
+            .add_event::<UnequipItemEvent>()
+            .add_systems(Update, (
+                pickup_items,
+                drop_item,
+                equip_item,
+                unequip_item,
+                update_equipped_stats,
+            ).run_if(in_state(GameState::Playing)));
     }
 }
 

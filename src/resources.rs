@@ -8,6 +8,14 @@ pub struct GameRng {
     pub rng: ChaCha8Rng,
 }
 
+impl Default for GameRng {
+    fn default() -> Self {
+        Self {
+            rng: ChaCha8Rng::seed_from_u64(0),
+        }
+    }
+}
+
 impl GameRng {
     pub fn from_seed(seed: u64) -> Self {
         Self {

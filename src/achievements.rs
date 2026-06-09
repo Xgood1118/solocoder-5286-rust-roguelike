@@ -2,13 +2,14 @@ use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 use crate::resources::*;
 use crate::components::*;
+use crate::states::*;
 
 pub struct AchievementPlugin;
 
 impl Plugin for AchievementPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<AchievementUnlockedEvent>()
-            .add_systems(Update, check_achievements);
+            .add_systems(Update, check_achievements.run_if(in_state(GameState::Playing)));
     }
 }
 

@@ -1,0 +1,1 @@
+./target/release/roguelike.exe 窗口能正常起来了，PlayerStats panic 没了，Vulkan 适配器也认得到。但默认 GameState 落在 MainMenu，代码里没注册 OnEnter(MainMenu) 也没任何键位 / 鼠标处理触发 next_state.set(GeneratingMap)，窗口点半天啥也进不去，地图不生成、player 不 spawn、怪物不刷，啥都玩不了。检查修复一下，让游戏能正常进入 Playing 状态能玩。
